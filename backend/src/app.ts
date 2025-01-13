@@ -3,7 +3,7 @@ import cors from 'cors'
 import helmet from 'helmet'
 import fileUpload from 'express-fileupload'
 import { createConnection } from 'typeorm'
-import { errorHandler } from './middleware/errorHandler'
+import { errorHandler } from './middleware/errorHandler.js'
 
 const app = express()
 const requestRoutes = require('./routes/requests')
