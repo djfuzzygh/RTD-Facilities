@@ -1,0 +1,74 @@
+trigger:
+  - main
+
+variables:
+  NODE_VERSION: '18.x'
+  AZURE_SUBSCRIPTION: 'Your-Azure-Subscription'
+  APP_NAME: 'your-app-name'
+  API_APP_NAME: 'your-api-name'
+
+stages:
+- stage: Build
+  jobs:
+  - job: BuildJob
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: $(NODE_VERSION)
+      displayName: 'Install Node.js'
+
+    - script: |
+        npm install
+        npm run build
+      displayName: 'Build Frontend'
+      workingDirectory: '$(System.DefaultWorkingDirectory)'
+
+    - script: |
+        cd backend
+        npm install
+        npm run build
+      displayName: 'Build Backend'
+
+    - task: ArchiveFiles@2
+      inputs:
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/.next'
+        includeRootFolder: false
+        archiveType: 'zip'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/frontend.zip'
+        replaceExistingArchive: true
+
+    - task: ArchiveFiles@2
+      inputs:
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/backend/dist'
+        includeRootFolder: false
+        archiveType: 'zip'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/backend.zip'
+        replaceExistingArchive: true
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
+
+- stage: Deploy
+  jobs:
+  - job: DeployJob
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: AzureWebApp@1
+      inputs:
+        azureSubscription: $(AZURE_SUBSCRIPTION)
+        appName: $(APP_NAME)
+        package: '$(Pipeline.Workspace)/drop/frontend.zip'
+        appType: 'webApp'
+
+    - task: AzureWebApp@1
+      inputs:
+        azureSubscription: $(AZURE_SUBSCRIPTION)
+        appName: $(API_APP_NAME)
+        package: '$(Pipeline.Workspace)/drop/backend.zip'
+        appType: 'webApp' 

@@ -1,42 +1,24 @@
 'use client'
 
 import React, { createContext, useContext, useState } from 'react'
-import { toast } from "@/components/ui/use-toast"
 
-type Notification = {
+interface Notification {
   id: string
   message: string
-  type: 'assignment' | 'status_change' | 'general'
-  timestamp: Date
   read: boolean
+  createdAt: Date
 }
 
-type NotificationContextType = {
+interface NotificationContextType {
   notifications: Notification[]
-  addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => void
   markAsRead: (id: string) => void
+  addNotification: (message: string) => void
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined)
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>([])
-
-  const addNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
-    const newNotification = {
-      ...notification,
-      id: Math.random().toString(36).substr(2, 9),
-      timestamp: new Date(),
-      read: false,
-    }
-    setNotifications(prev => [newNotification, ...prev])
-    
-    // Show toast for new notifications
-    toast({
-      title: "New Notification",
-      description: notification.message,
-    })
-  }
 
   const markAsRead = (id: string) => {
     setNotifications(prev =>
@@ -46,16 +28,28 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     )
   }
 
+  const addNotification = (message: string) => {
+    setNotifications(prev => [
+      ...prev,
+      {
+        id: Math.random().toString(36).substr(2, 9),
+        message,
+        read: false,
+        createdAt: new Date()
+      }
+    ])
+  }
+
   return (
-    <NotificationContext.Provider value={{ notifications, addNotification, markAsRead }}>
+    <NotificationContext.Provider value={{ notifications, markAsRead, addNotification }}>
       {children}
     </NotificationContext.Provider>
   )
 }
 
-export const useNotifications = () => {
+export function useNotifications() {
   const context = useContext(NotificationContext)
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useNotifications must be used within a NotificationProvider')
   }
   return context

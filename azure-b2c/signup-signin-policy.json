@@ -1,0 +1,42 @@
+{
+  "TrustFrameworkPolicy": {
+    "PolicyId": "B2C_1A_SIGNUP_SIGNIN",
+    "PublicPolicyUri": "http://yourtenant.onmicrosoft.com/B2C_1A_SIGNUP_SIGNIN",
+    "TenantId": "yourtenant.onmicrosoft.com",
+    "BasePolicy": {
+      "TenantId": "yourtenant.onmicrosoft.com",
+      "PolicyId": "B2C_1A_TrustFrameworkExtensions"
+    },
+    "RelyingParty": {
+      "DefaultUserJourney": "SignUpOrSignIn",
+      "TechnicalProfile": {
+        "Id": "PolicyProfile",
+        "DisplayName": "PolicyProfile",
+        "Protocol": "OpenIdConnect",
+        "OutputClaims": {
+          "OutputClaim": [
+            {
+              "ClaimTypeReferenceId": "displayName"
+            },
+            {
+              "ClaimTypeReferenceId": "givenName"
+            },
+            {
+              "ClaimTypeReferenceId": "surname"
+            },
+            {
+              "ClaimTypeReferenceId": "email"
+            },
+            {
+              "ClaimTypeReferenceId": "objectId",
+              "PartnerClaimType": "sub"
+            }
+          ]
+        },
+        "SubjectNamingInfo": {
+          "ClaimType": "sub"
+        }
+      }
+    }
+  }
+} 
